@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { getAll } from "../store/memoryStore";
+import { v4 as uuidv4 } from "uuid";
+import { create, getAll } from "../store/memoryStore";
 import { Expense } from "../models/expense";
 
 const getExpenses = (req: Request, res: Response): void => {
@@ -35,4 +36,51 @@ const getExpenses = (req: Request, res: Response): void => {
   res.status(200).json(expenses);
 };
 
-export { getExpenses };
+const createExpense = (req: Request, res: Response): void => {
+  const { amount, category, date, description } = req.body as {
+    amount?: number;
+    category?: string;
+    date?: string;
+    description?: string;
+  };
+
+  const parsedAmount = Number(amount);
+  if (!amount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+    res.status(400).json({ message: "Invalid amount" });
+    return;
+  }
+
+  if (!category || typeof category !== "string" || category.trim() === "") {
+    res.status(400).json({ message: "Invalid category" });
+    return;
+  }
+
+  if (!date || typeof date !== "string") {
+    res.status(400).json({ message: "Invalid date" });
+    return;
+  }
+  const parsedDate = new Date(date).getTime();
+  if (Number.isNaN(parsedDate)) {
+    res.status(400).json({ message: "Invalid date" });
+    return;
+  }
+
+  if (description && typeof description !== "string") {
+    res.status(400).json({ message: "Invalid description" });
+    return;
+  }
+
+  const newExpense: Expense = {
+    id: uuidv4(),
+    amount: parsedAmount,
+    category: category.trim(),
+    date,
+    description: description?.trim() || undefined,
+    createdAt: new Date().toISOString(),
+  };
+
+  const created = create(newExpense);
+  res.status(201).json(created);
+};
+
+export { getExpenses, createExpense };
