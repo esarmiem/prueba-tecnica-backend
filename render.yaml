@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: pruebatecnicabackend
+    runtime: node
+    plan: free
+    rootDir: pruebatecnicabackend
+    buildCommand: pnpm install && pnpm build
+    startCommand: pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGIN
+        value: https://your-vercel-app.vercel.app
